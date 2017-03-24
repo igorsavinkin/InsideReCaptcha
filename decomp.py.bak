@@ -21,11 +21,11 @@ nbSet = 0
 tab = ''
 
 def NOP():
-    print(tab + '// nop')
+    print tab + '// nop'
 
 def NOP_POP():
     pop()
-    print(tab + '// nop')
+    print tab + '// nop'
 
 def MOV_PTR2PTR():
     src, dst = pop(), pop()
@@ -33,7 +33,7 @@ def MOV_PTR2PTR():
     imm = type(heap[src][0]) == int
     
     if ltype(dst) in (-1, -2):
-        if type(heap[src]) == list and len(heap[src]) == 1 and type(heap[src][0]) in (str, str):
+        if type(heap[src]) == list and len(heap[src]) == 1 and type(heap[src][0]) in (str, unicode):
             heap[dst] = [heap[src]]
         else:
             heap[dst] = [heap[src], '']
@@ -47,18 +47,18 @@ def MOV_PTR2PTR():
         heap[dst] = [heap[src]]
     
     if dst == 1:
-        print(tab + '_setKey(%s);' % get(heap[dst]))
+        print tab + '_setKey(%s);' % get(heap[dst])
         heap[dst] = [Var(dst)]
     elif dst == 0:
-        print(tab + 'goto %s;' % get(heap[dst]))
+        print tab + 'goto %s;' % get(heap[dst])
         if get(heap[dst]).isdigit() and int(get(heap[dst])) not in labels:
             labels.append(int(get(heap[dst])))
         heap[dst] = [Var(dst)]
     elif dst == 13:
-        print(tab + '_setXhr2Key(%s);' % get(heap[dst]))
+        print tab + '_setXhr2Key(%s);' % get(heap[dst])
         heap[dst] = [Var(dst)]
     elif dst <= 17:
-        print(tab + 'v%d = %s;' % (dst, get(heap[dst])))
+        print tab + 'v%d = %s;' % (dst, get(heap[dst]))
         heap[dst] = [Var(dst)]
 
 def MOV_IMM2PTR():
@@ -66,7 +66,7 @@ def MOV_IMM2PTR():
     op = ltype(dst)
     if op > 0:
         val = 0
-        for i in range(op):
+        for i in xrange(op):
             val <<= 8
             val |= pop()
         if dst == 1:
@@ -76,49 +76,49 @@ def MOV_IMM2PTR():
         length = pop() << 8 | pop()
         if op == -1:
             if strkey:
-                val = ''.join(strkey[pop() << 8 | pop()] for i in range(length))
+                val = ''.join(strkey[pop() << 8 | pop()] for i in xrange(length))
             else:
-                val = ''.join(chr(pop()) for i in range(length)).decode('utf8')
+                val = ''.join(chr(pop()) for i in xrange(length)).decode('utf8')
         else:
-            val = ''.join(chr(pop()) for i in range(length))
+            val = ''.join(chr(pop()) for i in xrange(length))
         strings[dst] = val
     else:
         exit('err')
     heap[dst] = [val]
     
     if dst == 8:
-        print(tab + '_setEndFunction(f%d);' % val)
+        print tab + '_setEndFunction(f%d);' % val
         if val < fd.tell():
             exit('pointer to back: unhandled')
         ptr.append(val)
     elif dst == 1:
-        print(tab + '_setKey(%d);' % val)
+        print tab + '_setKey(%d);' % val
     elif dst == 0:
-        print(tab + 'goto %d;' % val)
+        print tab + 'goto %d;' % val
         if val not in labels:
             labels.append(val)
     elif dst == 13:
-        print(tab + '_setXhr2Key(%d);' % val)
+        print tab + '_setXhr2Key(%d);' % val
     elif dst <= 17:
-        print(tab + 'v%d = %s;' % (dst, get(heap[dst])))
+        print tab + 'v%d = %s;' % (dst, get(heap[dst]))
 
 def MOV_ARR2PTR():
     srcArr, srcInd, dst = pop(), pop(), pop()
     heap[dst] = [Obj(heap[srcInd], heap[srcArr])]
     
     if dst == 1:
-        print(tab + '_setKey(%s);' % get(heap[dst]))
+        print tab + '_setKey(%s);' % get(heap[dst])
         heap[dst] = [Var(dst)]
     elif dst == 0:
-        print(tab + 'goto %s;' % get(heap[dst]))
+        print tab + 'goto %s;' % get(heap[dst])
         if get(heap[dst]).isdigit() and int(get(heap[dst])) not in labels:
             labels.append(int(get(heap[dst])))
         heap[dst] = [Var(dst)]
     elif dst == 13:
-        print(tab + '_setXhr2Key(%s);' % get(heap[dst]))
+        print tab + '_setXhr2Key(%s);' % get(heap[dst])
         heap[dst] = [Var(dst)]
     elif dst <= 17:
-        print(tab + 'v%d = %s;' % (dst, get(heap[dst])))
+        print tab + 'v%d = %s;' % (dst, get(heap[dst]))
         heap[dst] = [Var(dst)]
     
     if strings[srcInd] == 'toString':
@@ -149,7 +149,7 @@ def MOV_ARR2PTR():
 
 def MOV_TYP2PTR():
     src, dst = pop(), pop()
-    print(tab + 'v%d = _getType(%s);' % (dst, get(heap[src])))
+    print tab + 'v%d = _getType(%s);' % (dst, get(heap[src]))
     heap[dst] = [Var(dst)]
 
 def CONCAT():
@@ -159,13 +159,13 @@ def CONCAT():
     elif ltype(dst) == -2:
         if ltype(src) < 0:
             if ltype(src) == -1:
-                print(tab + '_concat(%s, _intToWord(_utf8encode(%s).length));' % (get(heap[dst]), get(heap[src])))
-                print(tab + '_concat(%s, _utf8encode(%s));' % (get(heap[dst]), get(heap[src])))
+                print tab + '_concat(%s, _intToWord(_utf8encode(%s).length));' % (get(heap[dst]), get(heap[src]))
+                print tab + '_concat(%s, _utf8encode(%s));' % (get(heap[dst]), get(heap[src]))
             else:
-                print(tab + '_concat(%s, _intToWord(%s.length));' % (get(heap[dst]), get(heap[src])))
-                print(tab + '_concat(%s, %s);' % (get(heap[dst]), get(heap[src])))
+                print tab + '_concat(%s, _intToWord(%s.length));' % (get(heap[dst]), get(heap[src]))
+                print tab + '_concat(%s, %s);' % (get(heap[dst]), get(heap[src]))
         else:
-            print(tab + '_concat(%s, _intToBytes(%s));' % (get(heap[dst]), get(heap[src])))
+            print tab + '_concat(%s, _intToBytes(%s));' % (get(heap[dst]), get(heap[src]))
         if not isinstance(heap[dst][0], Global):
             heap[dst] = [Var(dst)]
     else:
@@ -173,18 +173,18 @@ def CONCAT():
 
 def EVAL():
     src, dst = pop(), pop()
-    if type(heap[src]) == list and len(heap[src]) == 1 and type(heap[src][0]) in (str, str):
+    if type(heap[src]) == list and len(heap[src]) == 1 and type(heap[src][0]) in (str, unicode):
         if (match('^[a-zA-Z_$][a-zA-Z_$0-9]*$', heap[src][0]) or match('^/[^/]+/[a-z]*$', heap[src][0])) and dst > 17:
             heap[dst] = [Global(heap[src][0])]
         elif match('^[0-9]*\.[0-9]+$', heap[src][0]) and dst > 17:
             heap[dst] = [float(heap[src][0])]
         else:
-            print(tab + 'v%d = %s;' % (dst, heap[src][0]))
+            print tab + 'v%d = %s;' % (dst, heap[src][0])
             heap[dst] = [Var(dst)]
     elif type(heap[src]) == list and len(heap[src]) == 2 and get(heap[src][0]) == "'0,'" and type(heap[src][1]) == list and len(heap[src][1]) == 1 and isinstance(heap[src][1][0], Obj) and heap[src][1][0].val == 'toString()':
         heap[dst] = [heap[src][1][0].parent]
     else:
-        print(tab + 'v%d = eval(%s);' % (dst, get(heap[src])))
+        print tab + 'v%d = eval(%s);' % (dst, get(heap[src]))
         heap[dst] = [Var(dst)]
     
     if strings[src]:
@@ -193,7 +193,7 @@ def EVAL():
 def SUB():
     src, dst = pop(), pop()
     if len(heap[src]) == 1 and type(heap[src][0]) in (int, float):
-        for i in range(len(heap[dst])):
+        for i in xrange(len(heap[dst])):
             if isinstance(heap[dst][i], Oper) and heap[dst][i].type_ == '-' and type(heap[dst][i].val) in (int, float):
                 heap[dst][i].val += heap[src][0]
                 return
@@ -208,23 +208,23 @@ def CALL():
     if type(heap[func].val) == list and len(heap[func].val) == 1 and heap[func].val[0] == 'toString' and not args:
         heap[dst] = [Obj('toString()', heap[self])]
     else:
-        args = ', '.join(get(heap[pop()]) for i in range(args))
-        print(tab + 'v%d = %s(%s);' % (dst, get(Obj(heap[func].val, heap[self])), args))
+        args = ', '.join(get(heap[pop()]) for i in xrange(args))
+        print tab + 'v%d = %s(%s);' % (dst, get(Obj(heap[func].val, heap[self])), args)
         heap[dst] = [Var(dst)]
     
     if dst == 1:
-        print(tab + '_setKey(%s);' % get(heap[dst]))
+        print tab + '_setKey(%s);' % get(heap[dst])
         heap[dst] = [Var(dst)]
     elif dst == 0:
-        print(tab + 'goto %s;' % get(heap[dst]))
+        print tab + 'goto %s;' % get(heap[dst])
         if get(heap[dst]).isdigit() and int(get(heap[dst])) not in labels:
             labels.append(int(get(heap[dst])))
         heap[dst] = [Var(dst)]
     elif dst == 13:
-        print(tab + '_setXhr2Key(%s);' % get(heap[dst]))
+        print tab + '_setXhr2Key(%s);' % get(heap[dst])
         heap[dst] = [Var(dst)]
     elif dst <= 17:
-        print(tab + 'v%d = %s;' % (dst, get(heap[dst])))
+        print tab + 'v%d = %s;' % (dst, get(heap[dst]))
         heap[dst] = [Var(dst)]
     
     global key3
@@ -249,7 +249,7 @@ def MOD():
 def LISTEN():
     elem, event, cb, arg0 = pop(), pop(), pop(), pop()
     cb = get(heap[cb])
-    print(tab + '%s.addEventListener(%s, _createCallback(%s, %s), false);' % (get(heap[elem]), get(heap[event]), cb, get(heap[arg0])))
+    print tab + '%s.addEventListener(%s, _createCallback(%s, %s), false);' % (get(heap[elem]), get(heap[event]), cb, get(heap[arg0]))
     if int(cb) < fd.tell():
         exit('pointer to back: unhandled')
     ptr.append(int(cb))
@@ -257,7 +257,7 @@ def LISTEN():
 
 def MOV_PTR2ARR():
     dstArr, dstInd, src = pop(), pop(), pop()
-    print(tab + '%s = %s;' % (get(Obj(heap[dstInd], heap[dstArr])), get(heap[src])))
+    print tab + '%s = %s;' % (get(Obj(heap[dstInd], heap[dstArr])), get(heap[src]))
     
     global opcodes
     if strings[dstInd] == 'M':
@@ -269,12 +269,12 @@ def ADD():
     src, dst = pop(), pop()
     if ltype(dst) == -2:
         if ltype(src) == -1:
-            print(tab + '_concat(%s, _utf8encode(%s));' % (get(heap[dst]), get(heap[src])))
+            print tab + '_concat(%s, _utf8encode(%s));' % (get(heap[dst]), get(heap[src]))
         else:
-            print(tab + '_concat(%s, %s);' % (get(heap[dst]), get(heap[src])))
+            print tab + '_concat(%s, %s);' % (get(heap[dst]), get(heap[src]))
     else:
         if len(heap[src]) == 1 and type(heap[src][0]) in (int, float):
-            for i in range(len(heap[dst])):
+            for i in xrange(len(heap[dst])):
                 if type(heap[dst][i]) in (int, float):
                     heap[dst][i] += heap[src][0]
                     return
@@ -284,7 +284,7 @@ def ADD():
 
 def MOV_NOTZERO():
     cmp1, src = pop(), pop()
-    print(tab + 'if(v%d != 0) {\n%s    goto %s;\n%s}' % (cmp1, tab, get(heap[src]), tab))
+    print tab + 'if(v%d != 0) {\n%s    goto %s;\n%s}' % (cmp1, tab, get(heap[src]), tab)
     if get(heap[src]).isdigit() and int(get(heap[src])) not in labels:
         labels.append(int(get(heap[src])))
     heap[0] = [Var(0)]
@@ -307,19 +307,19 @@ def OR():
 
 def PUSHL():
     src = pop()
-    print(tab + 'f%d();' % get(heap[src]))
+    print tab + 'f%d();' % get(heap[src])
 
 def POPL():
     global tab
     nbpos = pop()
     if tab != '':
         if nbpos:
-            pos = '], ['.join(map(str, (pop() for i in range(nbpos))))
-            print(tab + 'return %s;' % get(heap[pos]))
+            pos = '], ['.join(map(str, (pop() for i in xrange(nbpos))))
+            print tab + 'return %s;' % get(heap[pos])
         else:
-            print(tab + 'return;')
+            print tab + 'return;'
         tab = ''
-        print('}')
+        print '}'
 
 def INC_IFIN():
     needle, haystack, dst = pop(), pop(), pop()
@@ -327,7 +327,7 @@ def INC_IFIN():
 
 def MOV_CLB2PTR():
     dst, cb, arg0 = pop(), pop(), pop()
-    print(tab + 'v%d = _setCallback(%s, %s);' % (dst, get(heap[cb]), get(heap[arg0])))
+    print tab + 'v%d = _setCallback(%s, %s);' % (dst, get(heap[cb]), get(heap[arg0]))
     if int(heap[cb]) < fd.tell():
         exit('pointer to back: unhandled')
     ptr.append(int(heap[cb]))
@@ -351,28 +351,28 @@ def JSOR():
 
 def CALL2():
     func, dst, args, self = pop(), pop(), pop() - 1, pop()
-    args = ', '.join(map(str, (pop() for i in range(args))))
-    print(tab + 'v%d = new %s(%s);' % (dst, get(Obj(heap[func], heap[self])), args))
+    args = ', '.join(map(str, (pop() for i in xrange(args))))
+    print tab + 'v%d = new %s(%s);' % (dst, get(Obj(heap[func], heap[self])), args)
     heap[dst] = [Var(dst)]
     
     if dst == 1:
-        print(tab + '_setKey(%s);' % get(heap[dst]))
+        print tab + '_setKey(%s);' % get(heap[dst])
         heap[dst] = [Var(dst)]
     elif dst == 0:
-        print(tab + 'goto %s;' % get(heap[dst]))
+        print tab + 'goto %s;' % get(heap[dst])
         if get(heap[dst]).isdigit() and int(get(heap[dst])) not in labels:
             labels.append(int(get(heap[dst])))
         heap[dst] = [Var(dst)]
     elif dst == 13:
-        print(tab + '_setXhr2Key(%s);' % get(heap[dst]))
+        print tab + '_setXhr2Key(%s);' % get(heap[dst])
         heap[dst] = [Var(dst)]
     elif dst <= 17:
-        print(tab + 'v%d = %s;' % (dst, get(heap[dst])))
+        print tab + 'v%d = %s;' % (dst, get(heap[dst]))
         heap[dst] = [Var(dst)]
 
 def CALL3():
     obj, func, chunklen, arg2 = pop(), pop(), pop(), pop()
-    print(tab + 'for(i = 0; i < %s.length; i += %s) {\n%s    %s(%s.slice(i, i + %s), %s);\n%s}' % (get(heap[obj]), get(heap[chunklen]), tab, get(heap[func]), get(heap[obj]), get(heap[chunklen]), get(heap[arg2]), tab))
+    print tab + 'for(i = 0; i < %s.length; i += %s) {\n%s    %s(%s.slice(i, i + %s), %s);\n%s}' % (get(heap[obj]), get(heap[chunklen]), tab, get(heap[func]), get(heap[obj]), get(heap[chunklen]), get(heap[arg2]), tab)
 
 opcodes = [
 NOP,
@@ -453,13 +453,13 @@ def get(obj, asparent=False, hasstr=False):
         if isinstance(obj.val, Obj):
             obj = obj.val
     
-    if type(obj.val) in (str, str) and obj.parent:
+    if type(obj.val) in (str, unicode) and obj.parent:
         if obj.val == 'toString()' and hasstr:
             return get(obj.parent, asparent, hasstr)
         nobj = obj.val
     elif isinstance(obj.val, Global):
         nobj = obj.val.name
-    elif type(obj.val) in (str, str):
+    elif type(obj.val) in (str, unicode):
         nobj = repr(obj.val).lstrip('u')
     elif type(obj.val) == int and obj.val & 0xff == 0xff:
         nobj = hex(obj.val)
@@ -485,7 +485,7 @@ def get(obj, asparent=False, hasstr=False):
     else:
         exit('bad type: ' + str(type(obj.val)))
     
-    if obj.parent and type(obj.val) in (str, str):
+    if obj.parent and type(obj.val) in (str, unicode):
         parent = get(obj.parent, True)
         if parent == 'window':
             return nobj
@@ -518,7 +518,7 @@ def ltype(num):
 def getFunc(func):
     func = search('[^a-zA-Z]%s=(function.+)' % func, model).group(1)
     level = 0
-    for i in range(len(func)):
+    for i in xrange(len(func)):
         if func[i] == '{':
             level += 1
         elif func[i] == '}':
@@ -533,7 +533,7 @@ def getArr(arr, index):
     level = 0
     lastIndex = 1
     elems = []
-    for i in range(len(arr)):
+    for i in xrange(len(arr)):
         if arr[i] == ',' and level == 1:
             elems.append(arr[lastIndex:i])
             lastIndex = i + 1
@@ -547,7 +547,7 @@ def getArr(arr, index):
     return elems[index]
 
 key3 = ''
-heap = [[Var(i)] for i in range(256)]
+heap = [[Var(i)] for i in xrange(256)]
 heap[4] = [Global('xhr1')]
 heap[9] = [Global('window')]
 heap[10] = [Global('this')]
@@ -559,12 +559,12 @@ def t32(num):
 
 def hashKey(stri):
     state = [0x9e3779b9, 0x9e3779b9, 0x12b9b0a1]
-    for i in range(0, len(stri), 12):
+    for i in xrange(0, len(stri), 12):
         block = unpack('>3i', stri[i:i+12].ljust(12,'\0'))
-        for j in range(3):
+        for j in xrange(3):
             state[j] += block[j]
         factors = [13, 8, 13, 12, 16, 5, 3, 10, 15]
-        for j in range(len(factors)):
+        for j in xrange(len(factors)):
             d = state[((j % 3) + 2) % 3]
             state[j % 3] = t32((state[j % 3] - state[((j % 3) + 1) % 3] - d) ^ (t32(d << factors[j]) if j % 3 == 1 else ((d & 0xFFFFFFFF) >> factors[j])))
     setKey(state[2] & 0xffffffff)
@@ -582,7 +582,7 @@ def teaEnc(word1, word2, key):
     acc = 0
     word1 &= 0xffffffff
     word2 &= 0xffffffff
-    for i in range(32):
+    for i in xrange(32):
         word1 += ((word2 << 4 ^ word2 >> 5) + word2) ^ (acc + key[acc & 3])
         word1 &= 0xffffffff
         acc += 0x9e3779b9
@@ -596,15 +596,15 @@ def pop():
     pos = fd.tell()
     if pos in ptr:
         if pos in ptrWithArg:
-            print(tab + 'function f%d(arg0) {' % pos)
+            print tab + 'function f%d(arg0) {' % pos
         else:
-            print(tab + 'function f%d() {' % pos)
+            print tab + 'function f%d() {' % pos
         tab = '    '
     if pos in labels:
-        print('label %d:' % pos)
+        print 'label %d:' % pos
     byte = fd.read(1)
     if not byte:
-        print(tab + '// EOF! :)')
+        print tab + '// EOF! :)'
         exit(0)
     ctext = teaEnc(seed, pos / 8, [0, 0, 0, key])
     return ord(byte) ^ ctext[pos % 8]
